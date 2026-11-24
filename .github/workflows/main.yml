@@ -1,0 +1,23 @@
+name: Extrair zip
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extrair
+        run: |
+          Z=$(ls *.zip | head -n 1)
+          mkdir -p /tmp/x && unzip -o "$Z" -d /tmp/x
+          D=$(find /tmp/x -maxdepth 1 -mindepth 1 -type d | head -n 1)
+          [ -n "$D" ] && cp -a "$D"/. . || cp -a /tmp/x/. .
+          rm -f "$Z"
+      - name: Salvar
+        run: |
+          git config user.name "nimbus"
+          git config user.email "nimbus@users.noreply.github.com"
+          git add -A
+          git commit -m "Arquivos extraidos do zip" || true
+          git push
